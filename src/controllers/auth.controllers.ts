@@ -1,72 +1,70 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
-import { hashPassword, validatePassword } from "../utils/crypto";
 import { createToken } from "../utils/tokens";
-import { createUser, getUserByEmail } from "../helpers/auth.helpers";
-import { handleErrorResponse, AuthError } from "../utils/errors";
-import { NewUser, User } from "../models/users";
-import { Token } from "../types";
+import { IUser, User } from "../models/user.model";
+import { Token } from "../utils/types";
+import { AppError } from "../utils/errors";
+import { sendErrorResponse, sendSuccessResponse } from "../utils/responses";
 
 export const signup = async (req: Request, res: Response) => {
-  const { name, email, password }: NewUser = req.body;
+  const data = req.body as IUser;
 
   try {
-    const foundUser = await getUserByEmail(email);
+    const foundUser = await User.findOne({ email: data.email });
 
     if (foundUser)
-      throw new AuthError("El correo ingresado ya se encuentra registrado");
+      throw new AppError(400, "El correo ingresado ya se encuentra registrado");
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const user = await createUser({ name, email, password: hashedPassword });
+    const newUser = await User.create({ ...data, password: hashedPassword });
+
+    const user = {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+    } as IUser;
 
     const token = createToken(user);
 
-    return res
-      .status(201)
-      .cookie("token", token, {
-        httpOnly: true,
-      })
-      .json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
-      });
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
+
+    return sendSuccessResponse(res, 200, "Registro exitoso", user);
   } catch (error) {
-    return handleErrorResponse(error, res);
+    return sendErrorResponse(res, error, "Error al registrar el usuario");
   }
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password }: User = req.body;
+  const data = req.body as IUser;
 
   try {
-    const user = await getUserByEmail(email);
+    const user = await User.findOne({ email: data.email });
 
-    if (!user) throw new AuthError("Credenciales inválidas");
+    if (!user) throw new AppError(401, "Credenciales inválidas");
 
-    const validPassword = await validatePassword(password, user.password);
+    const validPassword = await bcrypt.compare(data.password, user.password);
 
-    if (!validPassword) throw new AuthError("Credenciales inválidas");
+    if (!validPassword) throw new AppError(401, "Credenciales inválidas");
 
-    const token = createToken(user);
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    } as IUser;
 
-    return res
-      .status(200)
-      .cookie("token", token, {
-        httpOnly: true,
-      })
-      .json({
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
-      });
+    const token = createToken(safeUser);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
+
+    return sendSuccessResponse(res, 200, "Inicio de sesión exitoso", safeUser);
   } catch (error) {
-    return handleErrorResponse(error, res);
+    return sendErrorResponse(res, error, "Error al iniciar sesión");
   }
 };
 
@@ -74,23 +72,25 @@ export const logout = (req: Request, res: Response) => {
   try {
     res.clearCookie("token");
 
-    return res.status(200).json({ user: undefined });
+    return sendSuccessResponse(res, 200, "Se ha cerrado sesión");
   } catch (error) {
-    return handleErrorResponse(error, res);
+    return sendErrorResponse(res, error, "Error al cerrar sesión");
   }
 };
 
 export const check = (req: Request, res: Response) => {
   const token: string = req.cookies.token;
 
-  if (!token) return res.status(200).json({ user: undefined });
-
   try {
-    const { user } = jwt.decode(token) as Token;
-    if (!user) return res.status(200).json({ user: undefined });
+    if (!token) throw new AppError(401, "No se ha podido validar la sesión");
 
-    return res.status(200).json({ user });
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET!) as Token;
+
+    if (!decoded.user)
+      throw new AppError(401, "No se ha podido validar la sesión");
+
+    return sendSuccessResponse(res, 200, "Sesión activa", decoded.user);
   } catch (error) {
-    return handleErrorResponse(error, res);
+    return sendErrorResponse(res, error, "Sesión cerrada");
   }
 };

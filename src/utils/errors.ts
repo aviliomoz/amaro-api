@@ -1,54 +1,46 @@
-import { Response } from "express";
+import { ZodError } from "zod";
 
-export class AuthError extends Error {
-  constructor(message: string) {
-    super(message);
+type ErrorInfo = {
+  status: number;
+  details: string;
+};
+
+export class AppError extends Error {
+  public readonly code: number;
+
+  constructor(code: number, details: string) {
+    super(details);
+    this.code = code;
+
+    // Setting the prototype explicitly is necessary for custom errors in TypeScript.
+    Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
-export class TokenError extends Error {
-  constructor(message: string) {
-    super(message);
+export const getErrorInfo = (error: unknown): ErrorInfo => {
+  if (error instanceof AppError) {
+    return {
+      status: error.code,
+      details: error.message,
+    };
   }
-}
 
-export class DuplicateError extends Error {
-  constructor(message: string) {
-    super(message);
+  if (error instanceof ZodError) {
+    return {
+      status: 400,
+      details: error.errors[0].message,
+    };
   }
-}
 
-export class RequestError extends Error {
-  constructor(message: string) {
-    super(message);
+  if (error instanceof Error) {
+    return {
+      status: 500,
+      details: error.message,
+    };
   }
-}
 
-export const handleErrorResponse = (error: unknown, res: Response) => {
-  if (error instanceof TokenError)
-    return res
-      .status(498)
-      .json({ message: "Token error", error: error.message });
-
-  if (error instanceof AuthError)
-    return res
-      .status(401)
-      .json({ message: "Auth error", error: error.message });
-
-  if (error instanceof DuplicateError)
-    return res
-      .status(409)
-      .json({ message: "Duplicate error", error: error.message });
-
-  if (error instanceof RequestError)
-    return res
-      .status(400)
-      .json({ message: "Bad request error", error: error.message });
-
-  if (error instanceof Error)
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
-
-  return res.status(500).json({ message: "Unidentified server error", error });
+  return {
+    status: 501,
+    details: "Unidentified server error",
+  };
 };
