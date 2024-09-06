@@ -4,6 +4,7 @@ import { sendErrorResponse } from "../utils/responses";
 import { AppError } from "../utils/errors";
 import { verifyToken } from "../utils/tokens";
 import { CustomRequest } from "../utils/types";
+import { isValidObjectId } from "mongoose";
 
 export const validateSchema = (schema: ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -14,6 +15,24 @@ export const validateSchema = (schema: ZodSchema) => {
       return sendErrorResponse(res, error, "Validation error");
     }
   };
+};
+
+export const validateId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+
+  try {
+    if (!id || !isValidObjectId(id)) {
+      throw new AppError(400, "El ID está faltando o es inválido");
+    }
+
+    next();
+  } catch (error) {
+    sendErrorResponse(res, error, "No se pudo validar el ID de la consulta");
+  }
 };
 
 export const validateToken = async (
