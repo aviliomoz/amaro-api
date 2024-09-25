@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "../database/connection";
 
 export const UserSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().uuid(),
   name: z.string(),
   email: z.string().email(),
   password: z.string(),
@@ -14,8 +14,12 @@ export const LoginSchema = z.object({
 });
 
 export type UserType = z.infer<typeof UserSchema>;
+export type NewUserType = Partial<UserType>;
+export type CleanUserType = Omit<UserType, "password">;
 
-const createUser = async (user: UserType): Promise<UserType | undefined> => {
+const createUser = async (
+  user: UserType
+): Promise<CleanUserType | undefined> => {
   const data = await db.query(
     `
         INSERT INTO users (name, email, password)
@@ -28,7 +32,7 @@ const createUser = async (user: UserType): Promise<UserType | undefined> => {
   return data.rows[0];
 };
 
-const getUserById = async (id: string): Promise<UserType | undefined> => {
+const getUserById = async (id: string): Promise<CleanUserType | undefined> => {
   const data = await db.query(
     `
         SELECT id, name, email 
@@ -54,8 +58,26 @@ const getUserByEmail = async (email: string): Promise<UserType | undefined> => {
   return data.rows[0];
 };
 
+const updateUser = async (
+  id: string,
+  user: NewUserType
+): Promise<CleanUserType | undefined> => {
+  const data = await db.query(
+    `
+      UPDATE users
+      SET name = $2, email = $3
+      WHERE id = $1
+      RETURNING id, name, email
+    `,
+    [id, user.name, user.email]
+  );
+
+  return data.rows[0];
+};
+
 export const User = {
   createUser,
   getUserById,
   getUserByEmail,
+  updateUser,
 };
