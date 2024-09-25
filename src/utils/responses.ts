@@ -12,6 +12,8 @@ export const sendErrorResponse = (
     ok: false,
     message,
     error: details,
+    data: null,
+    meta: null,
   });
 };
 
