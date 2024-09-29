@@ -6,33 +6,27 @@ import { sendErrorResponse, sendSuccessResponse } from "../utils/responses";
 
 const signup = async (req: Request, res: Response) => {
   try {
-    const data = UserSchema.parse(req.body);
+    const body = UserSchema.parse(req.body);
 
-    const foundUser = await User.getUserByEmail(data.email);
+    const { data: foundUser } = await User.getUserByEmail(body.email);
 
-    if (foundUser) {
-      throw new Error("Usuario ya existe");
-    }
+    if (foundUser) throw new Error("Usuario ya existe");
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(data.password, salt);
+    const hashedPassword = await bcrypt.hash(body.password, salt);
 
-    const user = await User.createUser({ ...data, password: hashedPassword });
-
-    if (!user) {
-      throw new Error("Error al crear el usuario");
-    }
-
-    const token = createToken({
-      name: user.name,
-      email: user.email,
+    const { data: user, error } = await User.createUser({
+      ...body,
+      password: hashedPassword,
     });
 
+    if (error) throw new Error(error.message);
+    if (!user) throw new Error("Error al crear el usuario");
+
+    const token = createToken(user);
+
     return sendSuccessResponse(res, 201, "Usuario creado", {
-      user: {
-        name: user.name,
-        email: user.email,
-      },
+      user,
       token,
     });
   } catch (error) {
@@ -42,30 +36,29 @@ const signup = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   try {
-    const data = LoginSchema.parse(req.body);
+    const body = LoginSchema.parse(req.body);
 
-    const user = await User.getUserByEmail(data.email);
+    const { data: user, error } = await User.getUserByEmail(body.email);
 
-    if (!user) {
-      throw new Error("Credenciales inválidas");
-    }
+    if (error) throw new Error(error.message);
+    if (!user) throw new Error("Credenciales inválidas");
 
     const validatedPassword = await bcrypt.compare(
-      data.password,
+      body.password,
       user.password
     );
 
-    if (!validatedPassword) {
-      throw new Error("Credenciales inválidas");
-    }
+    if (!validatedPassword) throw new Error("Credenciales inválidas");
 
     const token = createToken({
+      id: user.id!,
       name: user.name,
       email: user.email,
     });
 
     return sendSuccessResponse(res, 200, "Login exitoso", {
       user: {
+        id: user.id!,
         name: user.name,
         email: user.email,
       },

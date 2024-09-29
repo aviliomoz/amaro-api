@@ -6,11 +6,12 @@ const getUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const user = await User.getUserById(id);
+    const { data, error } = await User.getUserById(id);
 
-    if (!user) throw new Error("No se encontró el usuario");
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("No se encontró el usuario");
 
-    return sendSuccessResponse(res, 200, "Usuario encontrado", user);
+    return sendSuccessResponse(res, 200, "Usuario encontrado", data);
   } catch (error) {
     return sendErrorResponse(res, error, "Error al obtener el usuario");
   }
@@ -19,13 +20,14 @@ const getUser = async (req: Request, res: Response) => {
 const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const data = UserSchema.partial().parse(req.body);
+    const body = UserSchema.omit({ password: true }).parse(req.body);
 
-    const user = await User.updateUser(id, data);
+    const { data, error } = await User.updateUser(id, body);
 
-    if (!user) throw new Error("No se pudo actualizar");
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("No se pudo actualizar");
 
-    return sendSuccessResponse(res, 200, "Usuario actualizado", user);
+    return sendSuccessResponse(res, 200, "Usuario actualizado", data);
   } catch (error) {
     return sendErrorResponse(res, error, "Error al actualizar el usuario");
   }

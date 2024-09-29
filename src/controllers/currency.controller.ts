@@ -4,11 +4,11 @@ import { Currency, CurrencySchema } from "../models/currency.model";
 
 const getCurrencies = async (req: Request, res: Response) => {
   try {
-    const currencies = await Currency.getCurrencies();
+    const { data, error } = await Currency.getCurrencies();
 
-    if (!currencies) throw new Error("No se pudieron obtener las monedas");
+    if (error) throw new Error("No se encontraror monedas");
 
-    return sendSuccessResponse(res, 200, "Monedas disponibles", currencies);
+    return sendSuccessResponse(res, 200, "Monedas disponibles", data || []);
   } catch (error) {
     sendErrorResponse(res, error, "Error al obtener las monedas");
   }
@@ -18,11 +18,11 @@ const getCurrencyById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const currency = await Currency.getCurrencyById(id);
+    const { data, error } = await Currency.getCurrencyById(id);
 
-    if (!currency) throw new Error("No se encontró la moneda");
+    if (error || !data) throw new Error("No se encontró la moneda");
 
-    return sendSuccessResponse(res, 200, "Moneda encontrada", currency);
+    return sendSuccessResponse(res, 200, "Moneda encontrada", data!);
   } catch (error) {
     sendErrorResponse(res, error, "Error al obtener la moneda");
   }
@@ -30,13 +30,13 @@ const getCurrencyById = async (req: Request, res: Response) => {
 
 const createCurrency = async (req: Request, res: Response) => {
   try {
-    const data = CurrencySchema.parse(req.body);
+    const body = CurrencySchema.parse(req.body);
 
-    const currency = await Currency.createCurrency(data);
+    const { data, error } = await Currency.createCurrency(body);
 
-    if (!currency) throw new Error("No se pudo crear la moneda");
+    if (error || !data) throw new Error("No se pudo crear la moneda");
 
-    return sendSuccessResponse(res, 201, "Moneda creada", currency);
+    return sendSuccessResponse(res, 201, "Moneda creada", data!);
   } catch (error) {
     sendErrorResponse(res, error, "Error al crear la moneda");
   }
@@ -45,13 +45,13 @@ const createCurrency = async (req: Request, res: Response) => {
 const updateCurrency = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const data = CurrencySchema.partial().parse(req.body);
+    const body = CurrencySchema.parse(req.body);
 
-    const currency = await Currency.updateCurrency(id, data);
+    const { data, error } = await Currency.updateCurrency(id, body);
 
-    if (!currency) throw new Error("No se pudo actualizar la moneda");
+    if (error || !data) throw new Error("No se pudo actualizar la moneda");
 
-    return sendSuccessResponse(res, 200, "Moneda actualizada", currency);
+    return sendSuccessResponse(res, 200, "Moneda actualizada", data!);
   } catch (error) {
     sendErrorResponse(res, error, "Error al actualizar la moneda");
   }
