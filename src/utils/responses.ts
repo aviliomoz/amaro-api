@@ -1,34 +1,24 @@
 import { Response } from "express";
-import { getErrorInfo } from "./errors";
+import { ZodError } from "zod";
 
-export const sendErrorResponse = (
-  res: Response,
-  error: unknown,
-  message: string
-) => {
-  const { status, details } = getErrorInfo(error);
+export const sendApiResponse = <T>(res: Response, status: number, error: unknown | null, data: T | null, message?: string) => {
+    return res.status(status).json({
+        ok: !error,
+        error: !error ? null : handleErrorMessage(error),
+        data: !data ? null : data,
+        message
+    })
+}
 
-  return res.status(status).json({
-    ok: false,
-    message,
-    error: details,
-    data: null,
-    meta: null,
-  });
-};
+const handleErrorMessage = (error: unknown) => {
 
-export const sendSuccessResponse = (
-  res: Response,
-  status: number,
-  message: string,
-  data?: Record<string, any>,
-  meta?: { count?: number; pages?: number }
-) => {
-  return res.status(status).json({
-    ok: true,
-    message,
-    error: null,
-    data,
-    meta,
-  });
-};
+    if (error instanceof ZodError) {
+        return error.errors[0].message
+    }
+
+    if (error instanceof Error) {
+        return error.message
+    }
+
+    return "Error no identificado"
+}

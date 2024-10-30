@@ -1,126 +1,48 @@
 import { z } from "zod";
-import { db } from "../database/connection";
-import { ModelResult } from "../utils/types";
+import { db } from "../lib/database";
 
 export const CurrencySchema = z.object({
-  id: z.string().uuid().optional(),
-  code: z.string().max(10),
-  name: z.string().max(100),
-  symbol: z.string().max(5),
+  code: z.string(),
+  name: z.string(),
+  symbol: z.string(),
 });
 
-export type CurrencyType = z.infer<typeof CurrencySchema>;
+export type Currency = z.infer<typeof CurrencySchema>;
 
-const getCurrencies = async (): Promise<ModelResult<CurrencyType[]>> => {
-  await db.query("BEGIN");
+const getCurrencies = async (): Promise<Currency[]> => {
+  const query = "SELECT * FROM currencies";
+  const result = await db.query(query);
 
-  try {
-    const query = `SELECT * FROM currencies;`;
-    const result = await db.query(query);
-
-    await db.query("COMMIT");
-
-    return {
-      data: result.rows,
-      error: null,
-    };
-  } catch (error) {
-    await db.query("ROLLBACK");
-
-    return {
-      data: null,
-      error: error as Error,
-    };
-  }
+  return result.rows as Currency[];
 };
 
-const getCurrencyById = async (
-  id: string
-): Promise<ModelResult<CurrencyType>> => {
-  await db.query("BEGIN");
+const getCurrencyByCode = async (code: string): Promise<Currency> => {
+  const query = "SELECT * FROM currencies WHERE code = $1";
+  const values = [code];
 
-  try {
-    const query = `SELECT * FROM currencies WHERE id = $1;`;
-    const values = [id];
-
-    const result = await db.query(query, values);
-
-    await db.query("COMMIT");
-    return {
-      error: null,
-      data: result.rows[0],
-    };
-  } catch (error) {
-    await db.query("ROLLBACK");
-
-    return {
-      data: null,
-      error: error as Error,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as Currency;
 };
 
-const createCurrency = async (
-  currency: CurrencyType
-): Promise<ModelResult<CurrencyType>> => {
-  await db.query("BEGIN");
+const createCurrency = async (currency: Currency): Promise<Currency> => {
+  const query = "INSERT INTO currencies (code, name, symbol) VALUES ($1, $2, $3) RETURNING *";
+  const values = [currency.code, currency.name, currency.symbol];
 
-  try {
-    const query = `
-        INSERT INTO currencies (code, name, symbol)
-        VALUES ($1, $2, $3)
-        RETURNING *;
-    `;
-
-    const values = [currency.code, currency.name, currency.symbol];
-
-    const result = await db.query(query, values);
-
-    await db.query("COMMIT");
-    return {
-      data: result.rows[0],
-      error: null,
-    };
-  } catch (error) {
-    await db.query("ROLLBACK");
-
-    return {
-      error: error as Error,
-      data: null,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as Currency;
 };
 
-const updateCurrency = async (
-  id: string,
-  currency: CurrencyType
-): Promise<ModelResult<CurrencyType>> => {
-  await db.query("BEGIN");
+const updateCurrency = async (currency: Currency): Promise<Currency> => {
+  const query = "UPDATE currencies SET code = $1, name = $2, symbol = $3 WHERE code = $1 RETURNING *";
+  const values = [currency.code, currency.name, currency.symbol];
 
-  try {
-    const query = `UPDATE currencies SET code = $2, name = $3, symbol = $4 WHERE id = $1 RETURNING *;`;
-    const values = [id, currency.code, currency.name, currency.symbol];
-
-    const result = await db.query(query, values);
-
-    await db.query("COMMIT");
-    return {
-      data: result.rows[0],
-      error: null,
-    };
-  } catch (error) {
-    await db.query("ROLLBACK");
-
-    return {
-      error: error as Error,
-      data: null,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as Currency
 };
 
 export const Currency = {
   getCurrencies,
-  getCurrencyById,
+  getCurrencyByCode,
   createCurrency,
   updateCurrency,
 };

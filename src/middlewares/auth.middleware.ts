@@ -1,22 +1,18 @@
-import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { sendErrorResponse } from "../utils/responses";
+import { NextFunction, Request, Response } from "express";
+import { sendApiResponse } from "../utils/responses";
 
-export const validateToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const validateToken = (req: Request, res: Response, next: NextFunction) => {
   try {
-    let token = req.headers.authorization;
+    let accessToken = req.headers.authorization;
 
-    if (!token) {
+    if (!accessToken) {
       throw new Error("Token no enviado");
     }
 
-    token = token.split(" ")[1];
+    accessToken = accessToken.split(" ")[1];
 
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET!);
+    const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET!);
 
     if (!decodedToken) {
       throw new Error("Token inválido");
@@ -24,6 +20,6 @@ export const validateToken = (
 
     next();
   } catch (error) {
-    return sendErrorResponse(res, error, "Error al validar el token");
+    return sendApiResponse(res, 401, error, null, "Error al validar la sesión");
   }
 };

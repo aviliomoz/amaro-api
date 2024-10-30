@@ -1,30 +1,26 @@
 import { Request, Response } from "express";
-import { sendErrorResponse, sendSuccessResponse } from "../utils/responses";
+import { sendApiResponse } from "../utils/responses";
 import { Currency, CurrencySchema } from "../models/currency.model";
 
 const getCurrencies = async (req: Request, res: Response) => {
   try {
-    const { data, error } = await Currency.getCurrencies();
+    const currencies = await Currency.getCurrencies();
 
-    if (error) throw new Error("No se encontraror monedas");
-
-    return sendSuccessResponse(res, 200, "Monedas disponibles", data || []);
+    sendApiResponse(res, 200, null, currencies);
   } catch (error) {
-    sendErrorResponse(res, error, "Error al obtener las monedas");
+    sendApiResponse(res, 500, error, null, "Error al obtener las monedas");
   }
 };
 
-const getCurrencyById = async (req: Request, res: Response) => {
+const getCurrencyByCode = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const code = req.params.code as string;
 
-    const { data, error } = await Currency.getCurrencyById(id);
+    const currency = await Currency.getCurrencyByCode(code);
 
-    if (error || !data) throw new Error("No se encontró la moneda");
-
-    return sendSuccessResponse(res, 200, "Moneda encontrada", data!);
+    sendApiResponse(res, 200, null, currency);
   } catch (error) {
-    sendErrorResponse(res, error, "Error al obtener la moneda");
+    sendApiResponse(res, 500, error, null, "Error al obtener la moneda");
   }
 };
 
@@ -32,34 +28,29 @@ const createCurrency = async (req: Request, res: Response) => {
   try {
     const body = CurrencySchema.parse(req.body);
 
-    const { data, error } = await Currency.createCurrency(body);
+    const currency = await Currency.createCurrency(body);
 
-    if (error || !data) throw new Error("No se pudo crear la moneda");
-
-    return sendSuccessResponse(res, 201, "Moneda creada", data!);
+    sendApiResponse(res, 201, null, currency);
   } catch (error) {
-    sendErrorResponse(res, error, "Error al crear la moneda");
+    sendApiResponse(res, 500, error, null, "Error al crear la moneda");
   }
 };
 
 const updateCurrency = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
     const body = CurrencySchema.parse(req.body);
 
-    const { data, error } = await Currency.updateCurrency(id, body);
+    const currency = await Currency.updateCurrency(body);
 
-    if (error || !data) throw new Error("No se pudo actualizar la moneda");
-
-    return sendSuccessResponse(res, 200, "Moneda actualizada", data!);
+    sendApiResponse(res, 200, null, currency);
   } catch (error) {
-    sendErrorResponse(res, error, "Error al actualizar la moneda");
+    sendApiResponse(res, 500, error, null, "Error al actualizar la moneda");
   }
 };
 
 export const CurrencyController = {
   getCurrencies,
-  getCurrencyById,
+  getCurrencyByCode,
   createCurrency,
   updateCurrency,
 };

@@ -1,134 +1,44 @@
 import { z } from "zod";
-import { db } from "../database/connection";
-import { ModelResult } from "../utils/types";
+import { db } from "../lib/database";
 
 export const UserSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string(),
   email: z.string().email(),
-  password: z.string(),
 });
 
-export const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
+export type User = z.infer<typeof UserSchema>;
 
-export type UserType = z.infer<typeof UserSchema>;
-export type CleanUserType = Omit<UserType, "password">;
+const createUser = async (user: User): Promise<User> => {
+  const query = "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *";
+  const values = [user.name, user.email];
 
-const createUser = async (
-  user: UserType
-): Promise<ModelResult<CleanUserType>> => {
-  await db.query("BEGIN");
-
-  try {
-    const query = `
-          INSERT INTO users (name, email, password)
-          VALUES ($1, $2, $3)
-          RETURNING id, name, email
-      `;
-
-    const values = [user.name, user.email, user.password];
-
-    const result = await db.query(query, values);
-
-    await db.query("COMMIT");
-
-    return {
-      data: result.rows[0],
-      error: null,
-    };
-  } catch (error) {
-    await db.query("ROLLBACK");
-    return {
-      error: error as Error,
-      data: null,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as User
 };
 
-const getUserById = async (id: string): Promise<ModelResult<CleanUserType>> => {
-  try {
-    const query = `
-        SELECT id, name, email 
-        FROM users 
-        WHERE id = $1
-    `;
+const getUserById = async (id: string): Promise<User> => {
+  const query = "SELECT * FROM users WHERE id = $1";
+  const values = [id];
 
-    const values = [id];
-
-    const result = await db.query(query, values);
-
-    return {
-      data: result.rows[0],
-      error: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      error: error as Error,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as User;
 };
 
-const getUserByEmail = async (
-  email: string
-): Promise<ModelResult<UserType>> => {
-  try {
-    const query = `
-        SELECT * 
-        FROM users 
-        WHERE email = $1
-    `;
+const getUserByEmail = async (email: string): Promise<User> => {
+  const query = "SELECT * FROM users WHERE email = $1";
+  const values = [email];
 
-    const values = [email];
-
-    const result = await db.query(query, values);
-
-    return {
-      data: result.rows[0],
-      error: null,
-    };
-  } catch (error) {
-    return {
-      data: null,
-      error: error as Error,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as User;
 };
 
-const updateUser = async (
-  id: string,
-  user: CleanUserType
-): Promise<ModelResult<CleanUserType>> => {
-  const query = `
-      UPDATE users
-      SET name = $2, email = $3
-      WHERE id = $1
-      RETURNING id, name, email
-    `;
+const updateUser = async (user: User): Promise<User> => {
+  const query = "UPDATE users SET name = $2, email = $3 WHERE id = $1 RETURNING *";
+  const values = [user.id, user.name, user.email];
 
-  const values = [id, user.name, user.email];
-
-  await db.query("BEGIN");
-
-  try {
-    const result = await db.query(query, values);
-
-    await db.query("COMMIT");
-
-    return {
-      data: result.rows[0],
-      error: null,
-    };
-  } catch (error) {
-    await db.query("ROLLBACK");
-    return {
-      error: error as Error,
-      data: null,
-    };
-  }
+  const result = await db.query(query, values);
+  return result.rows[0] as User;
 };
 
 export const User = {

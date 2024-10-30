@@ -4,8 +4,8 @@ import { CurrencyController } from "../controllers/currency.controller";
 const router = Router();
 
 router.get("/", CurrencyController.getCurrencies);
-router.get("/:id", CurrencyController.getCurrencyById);
+router.get("/:code", CurrencyController.getCurrencyByCode);
 router.post("/", CurrencyController.createCurrency);
-router.put("/:id", CurrencyController.updateCurrency);
+router.put("/", CurrencyController.updateCurrency);
 
 export const CurrencyRouter = router;

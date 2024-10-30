@@ -1,39 +1,32 @@
 import { Request, Response } from "express";
 import { User, UserSchema } from "../models/user.model";
-import { sendErrorResponse, sendSuccessResponse } from "../utils/responses";
+import { sendApiResponse } from "../utils/responses";
 
-const getUser = async (req: Request, res: Response) => {
+const getUserById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const { data, error } = await User.getUserById(id);
+    const user = await User.getUserById(id);
 
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error("No se encontró el usuario");
-
-    return sendSuccessResponse(res, 200, "Usuario encontrado", data);
+    sendApiResponse(res, 200, null, user, "Usuario encontrado");
   } catch (error) {
-    return sendErrorResponse(res, error, "Error al obtener el usuario");
+    sendApiResponse(res, 500, error, null, "Error al obtener el usuario");
   }
 };
 
 const updateUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const body = UserSchema.omit({ password: true }).parse(req.body);
+    const body = UserSchema.parse(req.body);
 
-    const { data, error } = await User.updateUser(id, body);
+    const user = await User.updateUser(body);
 
-    if (error) throw new Error(error.message);
-    if (!data) throw new Error("No se pudo actualizar");
-
-    return sendSuccessResponse(res, 200, "Usuario actualizado", data);
+    sendApiResponse(res, 200, null, user, "Usuario actualizado exitosamente");
   } catch (error) {
-    return sendErrorResponse(res, error, "Error al actualizar el usuario");
+    sendApiResponse(res, 500, error, null, "Error al actualizar el usuario");
   }
 };
 
 export const UserController = {
-  getUser,
+  getUserById,
   updateUser,
 };
