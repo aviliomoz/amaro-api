@@ -1,5 +1,5 @@
+import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs";
-import jwt, { Jwt } from "jsonwebtoken"
 import { Request, Response } from "express";
 import { sendApiResponse } from "../utils/responses";
 import { LoginSchema, SignupSchema } from "../models/auth.model";
@@ -10,15 +10,15 @@ import { JWT } from "../utils/types";
 
 const signup = async (req: Request, res: Response) => {
   try {
-    const body = SignupSchema.parse(req.body);
+    const { name, lastname, email, password } = SignupSchema.parse(req.body);
 
-    const userFound = await User.getUserByEmail(body.email);
+    const userFound = await User.getUserByEmail(email);
     if (userFound) throw new Error("Usuario ya existe");
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(body.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await User.createUser({ name: body.name, email: body.email })
+    const user = await User.createUser({ name, lastname, email })
     await Account.createAccount(user.id!, hashedPassword)
 
     const refreshToken = createRefreshToken({ payload: user.id! });
@@ -39,14 +39,14 @@ const signup = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   try {
-    const body = LoginSchema.parse(req.body);
+    const { email, password } = LoginSchema.parse(req.body);
 
-    const user = await User.getUserByEmail(body.email);
+    const user = await User.getUserByEmail(email);
     if (!user) throw new Error("Credenciales inválidas");
 
     const account = await Account.getAccountByUserId(user.id!)
 
-    const validatedPassword = await bcrypt.compare(body.password, account.password);
+    const validatedPassword = await bcrypt.compare(password, account.password);
     if (!validatedPassword) throw new Error("Credenciales inválidas");
 
     const refreshToken = createRefreshToken({ payload: user.id! });

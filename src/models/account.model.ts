@@ -2,9 +2,9 @@ import { z } from "zod";
 import { db } from "../lib/database";
 
 export const AccountSchema = z.object({
-    id: z.string().uuid(),
+    id: z.string().uuid().optional(),
     user_id: z.string().uuid(),
-    password: z.string()
+    password: z.string().max(255),
 })
 
 export type Account = z.infer<typeof AccountSchema>

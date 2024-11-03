@@ -3,8 +3,9 @@ import { db } from "../lib/database";
 
 export const UserSchema = z.object({
   id: z.string().uuid().optional(),
-  name: z.string(),
-  email: z.string().email(),
+  name: z.string().max(100),
+  lastname: z.string().max(100),
+  email: z.string().email().max(100),
 });
 
 export type User = z.infer<typeof UserSchema>;

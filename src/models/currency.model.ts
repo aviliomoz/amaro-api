@@ -2,9 +2,9 @@ import { z } from "zod";
 import { db } from "../lib/database";
 
 export const CurrencySchema = z.object({
-  code: z.string(),
-  name: z.string(),
-  symbol: z.string(),
+  code: z.string().length(3),
+  name: z.string().max(100),
+  symbol: z.string().max(10),
 });
 
 export type Currency = z.infer<typeof CurrencySchema>;
