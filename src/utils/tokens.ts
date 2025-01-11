@@ -1,21 +1,12 @@
 import jwt from "jsonwebtoken";
+import { AuthPayload } from "./types";
 
-export const createRefreshToken = (payload: Record<string, string>) => {
+export const generateToken = (payload: AuthPayload, expiration: number) => {
   return jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: 60 * 60 * 24 * 30,
+    expiresIn: expiration,
   });
-};
+}
 
-export const createAccessToken = (payload: Record<string, string>) => {
-  return jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: 60 * 10,
-  });
-};
-
-export const createSessionToken = (payload: Record<string, string>) => {
-  return jwt.sign(payload, process.env.JWT_SECRET!, {
-    expiresIn: 60 * 60 * 24 * 365,
-  });
-};
-
-// Cambiar Record<string, string> por el tipo específico
+export const validateToken = (token: string) => {
+  return jwt.verify(token, process.env.JWT_SECRET!) as AuthPayload
+}

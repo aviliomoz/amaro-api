@@ -1,0 +1,1 @@
+export const ITEM_TYPES = ["supply", "subproduct", "product", "combo"] as const
