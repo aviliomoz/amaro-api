@@ -19,9 +19,9 @@ export type ProductRecipe = {
 
 export const Recipe = {
     
-    getRecipeBySubproduct: (base_id: string): Promise<ProductRecipe[]> => {},
-    getRecipeByProduct: async (base_id: string): Promise<ProductRecipe[]> => {},
-    getRecipeByCombo: (base_id: string): Promise<ProductRecipe[]> => {},
+    // getRecipeBySubproduct: (base_id: string): Promise<ProductRecipe[]> => {},
+    // getRecipeByProduct: async (base_id: string): Promise<ProductRecipe[]> => {},
+    // getRecipeByCombo: (base_id: string): Promise<ProductRecipe[]> => {},
 
     addIngredientToItem: async (recipe: Recipe): Promise<void> => {
         const query = "INSERT INTO recipes (base_id, ingredient_id, waste, amount, um) VALUES ($1, $2, $3, $4, $5)"

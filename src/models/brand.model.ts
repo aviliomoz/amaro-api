@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { db } from "../lib/database"
-import { UserType } from "../utils/types"
+import { User } from "./user.model"
 
 export const BrandSchema = z.object({
     id: z.string().uuid().optional(),
@@ -20,7 +20,7 @@ export const Brand = {
         return result.rows as Brand[]
     },
 
-    addUserToBrand: async (user_id: string, brand_id: string, type: UserType): Promise<void> => {
+    addUserToBrand: async (user_id: string, brand_id: string, type: User): Promise<void> => {
         const query = "INSERT INTO brand_users (user_id, brand_id, type) VALUES ($1, $2, $3)"
         const values = [user_id, brand_id, type]
 
