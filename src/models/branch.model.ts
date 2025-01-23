@@ -14,7 +14,27 @@ export const BranchSchema = z.object({
 
 export type Branch = z.infer<typeof BranchSchema>
 
+export type BranchWithBrandName = Branch & {
+    brand_name: string
+}
+
 export const Branch = {
+
+    getBranchesByUser: async (userId: string): Promise<BranchWithBrandName[]> => {
+        const query = `
+            SELECT branches.*, brands.name AS brand_name
+            FROM branches
+            INNER JOIN brands
+            ON branches.brand_id = brands.id
+            INNER JOIN branch_users AS bu
+            ON bu.branch_id = branches.id
+            WHERE bu.user_id = $1
+        `
+        const values = [userId]
+
+        const result = await db.query(query, values)
+        return result.rows as BranchWithBrandName[]
+    },
 
     getBranchesByBrand: async (brand_id: string): Promise<Branch[]> => {
         const query = "SELECT * FROM branches WHERE brand_id = $1"

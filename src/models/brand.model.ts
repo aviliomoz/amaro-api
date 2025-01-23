@@ -13,7 +13,15 @@ export type Brand = z.infer<typeof BrandSchema>
 export const Brand = {
 
     getBrandsByUser: async (user_id: string): Promise<Brand[]> => {
-        const query = "SELECT b.* FROM brands AS b INNER JOIN brand_users AS bu ON b.id = bu.brand_id AND bu.user_id = $1"
+        const query = `
+            SELECT DISTINCT brands.*
+            FROM brands
+            INNER JOIN branches
+            ON branches.brand_id = brands.id
+            INNER JOIN branch_users AS bu
+            ON bu.branch_id = branches.id
+            WHERE bu.user_id = $1
+        `
         const values = [user_id]
 
         const result = await db.query(query, values)
