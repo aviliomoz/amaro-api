@@ -92,6 +92,7 @@ export const AuthController = {
   logout: async (req: Request, res: Response) => {
     try {
       res.clearCookie("refreshToken")
+      res.clearCookie("currentBranchId")
       sendApiResponse(res, 200, null, null, "Sesión cerrada");
     } catch (error) {
       sendApiResponse(res, 500, error, null, "Error al cerrar la sesión")
