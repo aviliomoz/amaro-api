@@ -7,38 +7,38 @@ export const CurrencySchema = z.object({
   symbol: z.string().max(10),
 });
 
-export type Currency = z.infer<typeof CurrencySchema>;
+export type CurrencyType = z.infer<typeof CurrencySchema>;
 
-export const Currency = {
-  
-  getCurrencies: async (): Promise<Currency[]> => {
+export class Currency {
+
+  static async getCurrencies(): Promise<CurrencyType[]> {
     const query = "SELECT * FROM currencies";
     const result = await db.query(query);
 
-    return result.rows as Currency[];
-  },
+    return result.rows as CurrencyType[];
+  }
 
-  getCurrencyByCode: async (code: string): Promise<Currency> => {
+  static async getCurrencyByCode(code: string): Promise<CurrencyType> {
     const query = "SELECT * FROM currencies WHERE code = $1";
     const values = [code];
 
     const result = await db.query(query, values);
-    return result.rows[0] as Currency;
-  },
+    return result.rows[0] as CurrencyType;
+  }
 
-  createCurrency: async (currency: Currency): Promise<Currency> => {
+  static async createCurrency(currency: CurrencyType): Promise<CurrencyType> {
     const query = "INSERT INTO currencies (code, name, symbol) VALUES ($1, $2, $3) RETURNING *";
     const values = [currency.code, currency.name, currency.symbol];
 
     const result = await db.query(query, values);
-    return result.rows[0] as Currency;
-  },
+    return result.rows[0] as CurrencyType;
+  }
 
-  updateCurrency: async (currency: Currency): Promise<Currency> => {
+  static async updateCurrency(code: string, currency: CurrencyType): Promise<CurrencyType> {
     const query = "UPDATE currencies SET code = $1, name = $2, symbol = $3 WHERE code = $1 RETURNING *";
-    const values = [currency.code, currency.name, currency.symbol];
+    const values = [code, currency.name, currency.symbol];
 
     const result = await db.query(query, values);
-    return result.rows[0] as Currency
+    return result.rows[0] as CurrencyType
   }
 };

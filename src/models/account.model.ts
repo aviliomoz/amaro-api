@@ -2,28 +2,29 @@ import { z } from "zod";
 import { db } from "../lib/database";
 
 export const AccountSchema = z.object({
-    id: z.string().uuid().optional(),
-    user_id: z.string().uuid(),
+    id: z.string().uuid(),
+    userId: z.string().uuid(),
     password: z.string().max(255),
 })
 
-export type Account = z.infer<typeof AccountSchema>
+export type AccountType = z.infer<typeof AccountSchema>
+export type NewAccountType = Omit<AccountType, "id">
 
-export const Account = {
+export class Account {
 
-    createAccount: async (userId: string, password: string): Promise<Account> => {
+    static async createAccount(account: NewAccountType): Promise<AccountType> {
         const query = "INSERT INTO accounts (user_id, password) VALUES ($1, $2) RETURNING *"
-        const values = [userId, password]
+        const values = [account.userId, account.password]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Account
-    },
+        return result.rows[0] as AccountType
+    }
 
-    getAccountByUserId: async (userId: string): Promise<Account> => {
+    static async getAccountByUserId(userId: string): Promise<AccountType> {
         const query = "SELECT * FROM accounts WHERE user_id = $1 LIMIT 1"
         const values = [userId]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Account
+        return result.rows[0] as AccountType
     }
 }

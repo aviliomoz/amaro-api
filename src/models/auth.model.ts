@@ -12,5 +12,17 @@ export const SignupSchema = z.object({
     password: z.string(),
 });
 
-export type LoginData = z.infer<typeof LoginSchema>
-export type SignupData = z.infer<typeof SignupSchema>
+export type LoginType = z.infer<typeof LoginSchema>
+export type SignupType = z.infer<typeof SignupSchema>
+
+export class Login {
+    static validate(data: LoginType) {
+        return LoginSchema.parse(data)
+    }
+}
+
+export class Signup {
+    static validate(data: SignupType) {
+        return SignupSchema.parse(data)
+    }
+}

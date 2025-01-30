@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import { sendApiResponse } from "../utils/responses";
+import { sendApiResponse } from "../classes/response.class";
 
 export const validateToken = (req: Request, res: Response, next: NextFunction) => {
   try {

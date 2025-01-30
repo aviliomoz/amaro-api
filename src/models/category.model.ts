@@ -4,55 +4,60 @@ import { db } from "../lib/database";
 import { ITEM_TYPES } from "../utils/constants";
 
 export const CategorySchema = z.object({
-    id: z.string().uuid().optional(),
+    id: z.string().uuid(),
     name: z.string().max(100),
     type: z.enum(ITEM_TYPES),
     status: z.enum(["active", "inactive"]).default("active"),
-    brand_id: z.string().uuid(),
+    restaurantId: z.string().uuid(),
 });
 
-export type Category = z.infer<typeof CategorySchema>
+export type CategoryType = z.infer<typeof CategorySchema>
+export type NewCategoryType = Omit<CategoryType, "id">
 
-export const Category = {
+export class Category {
 
-    getCategoriesByType: async (brand_id: string, type: ItemType): Promise<Category[]> => {
-        const query = "SELECT * FROM categories WHERE brand_id = $1 AND type = $2"
-        const values = [brand_id, type]
+    static validate(data: NewCategoryType) {
+        return CategorySchema.omit({ id: true }).parse(data)
+    }
+
+    static async getCategoriesByType(restaurantId: string, type: ItemType): Promise<CategoryType[]> {
+        const query = "SELECT * FROM categories WHERE restaurant_id = $1 AND type = $2"
+        const values = [restaurantId, type]
 
         const result = await db.query(query, values)
-        return result.rows as Category[]
-    },
+        return result.rows as CategoryType[]
+    }
 
-    getCategoryById: async (id: string): Promise<Category> => {
+    static async getCategoryById(id: string): Promise<CategoryType> {
         const query = "SELECT * FROM categories WHERE id = $1"
         const values = [id]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Category
-    },
+        return result.rows[0] as CategoryType
+    }
 
-    getCategoriesByBrand: async (brand_id: string): Promise<Category[]> => {
-        const query = "SELECT * FROM categories WHERE brand_id = $1"
-        const values = [brand_id]
-
-        const result = await db.query(query, values)
-        return result.rows as Category[]
-    },
-
-    createCategory: async (category: Category): Promise<Category> => {
-        const query = "INSERT INTO categories (name, type, brand_id) VALUES ($1, $2, $3) RETURNING *"
-        const values = [category.name, category.type, category.brand_id]
+    static async getCategoriesByRestaurant(restaurantId: string): Promise<CategoryType[]> {
+        const query = "SELECT * FROM categories WHERE restaurant_id = $1"
+        const values = [restaurantId]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Category
-    },
+        return result.rows as CategoryType[]
+    }
 
-    updateCategory: async (category: Category): Promise<Category> => {
+    static async createCategory(category: NewCategoryType): Promise<CategoryType> {
+        const query = "INSERT INTO categories (name, type, restaurant_id) VALUES ($1, $2, $3) RETURNING *"
+        const values = [category.name, category.type, category.restaurantId]
+
+        const result = await db.query(query, values)
+        return result.rows[0] as CategoryType
+    }
+
+    static async updateCategory(id: string, category: NewCategoryType): Promise<CategoryType> {
         const query = "UPDATE categories SET name = $2, type = $3, status = $4 WHERE id = $1 RETURNING *"
-        const values = [category.id, category.name, category.type, category.status]
+        const values = [id, category.name, category.type, category.status]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Category
+        return result.rows[0] as CategoryType
     }
 
 }

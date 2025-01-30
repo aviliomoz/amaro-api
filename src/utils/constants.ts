@@ -1,1 +1,1 @@
-export const ITEM_TYPES = ["supply", "subproduct", "product", "combo"] as const
+export const ITEM_TYPES = ["supply", "base-recipe", "product", "combo"] as const

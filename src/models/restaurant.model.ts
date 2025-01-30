@@ -5,18 +5,22 @@ import { db } from "../lib/database";
 export const RestaurantSchema = z.object({
     id: z.string().uuid(),
     name: z.string().max(100),
-    currency_code: z.string().max(3),
-    purchase_tax: z.number().min(0).max(100),
-    sales_tax: z.number().min(0).max(100),
+    currencyCode: z.string().max(3),
+    purchaseTax: z.number().min(0).max(100),
+    salesTax: z.number().min(0).max(100),
     status: z.enum(["active", "inactive"]).default("active")
 });
 
-export type Restaurant = z.infer<typeof RestaurantSchema>
-export type NewRestaurant = Omit<Restaurant, "id">
+export type RestaurantType = z.infer<typeof RestaurantSchema>
+export type NewRestaurantType = Omit<RestaurantType, "id">
 
-export const Restaurant = {
+export class Restaurant {
 
-    getRestaurantsByUser: async (userId: string): Promise<Restaurant[]> => {
+    static validate(data: NewRestaurantType) {
+        return RestaurantSchema.omit({ id: true }).parse(data)
+    }
+
+    static async getRestaurantsByUser(userId: string): Promise<RestaurantType[]> {
         const query = `
             SELECT *
             FROM restaurants AS r
@@ -27,69 +31,69 @@ export const Restaurant = {
         const values = [userId]
 
         const result = await db.query(query, values)
-        return result.rows as Restaurant[]
-    },
+        return result.rows as RestaurantType[]
+    }
 
-    getRestaurantById: async (id: string): Promise<Restaurant> => {
+    static async getRestaurantById(id: string): Promise<RestaurantType> {
         const query = "SELECT * FROM restaurants WHERE id = $1"
         const values = [id]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Restaurant
-    },
+        return result.rows[0] as RestaurantType
+    }
 
-    createRestaurant: async (restaurant: NewRestaurant): Promise<Restaurant> => {
+    static async createRestaurant(restaurant: NewRestaurantType): Promise<RestaurantType> {
         const query = `
             INSERT INTO restaurants (name, currency_code, purchase_tax, sales_tax) 
             VALUES ($1, $2, $3, $4) 
             RETURNING *
         `
-        const values = [restaurant.name, restaurant.currency_code, restaurant.purchase_tax, restaurant.sales_tax]
+        const values = [restaurant.name, restaurant.currencyCode, restaurant.purchaseTax, restaurant.salesTax]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Restaurant
-    },
+        return result.rows[0] as RestaurantType
+    }
 
-    updateRestaurant: async (restaurant: Restaurant): Promise<Restaurant> => {
+    static async updateRestaurant(id: string, restaurant: NewRestaurantType): Promise<RestaurantType> {
         const query = `
             UPDATE restaurants
             SET name = $2, currency_code = $3, purchase_tax = $4, sales_tax = $5, status = $6 
             WHERE id = $1 
             RETURNING *
         `
-        const values = [restaurant.id, restaurant.name, restaurant.currency_code, restaurant.purchase_tax, restaurant.sales_tax, restaurant.status]
+        const values = [id, restaurant.name, restaurant.currencyCode, restaurant.purchaseTax, restaurant.salesTax, restaurant.status]
 
         const result = await db.query(query, values)
-        return result.rows[0] as Restaurant
-    },
+        return result.rows[0] as RestaurantType
+    }
 
-    addUserToRestaurant: async (user_id: string, restaurant_id: string, role_id: string, pin: string | null): Promise<void> => {
+    static async addUserToRestaurant(userId: string, restaurantId: string, roleId: string, pin: string | null): Promise<void> {
         const query = `
             INSERT INTO restaurant_users (user_id, branch_id, role_id, pin)
             VALUES ($1, $2, $3, $4)
         `
-        const values = [user_id, restaurant_id, role_id, pin]
+        const values = [userId, restaurantId, roleId, pin]
 
         await db.query(query, values)
-    },
+    }
 
-    removeUserFromRestaurant: async (user_id: string, restaurant_id: string): Promise<void> => {
+    static async removeUserFromRestaurant(userId: string, restaurantId: string): Promise<void> {
         const query = `
             DELETE restaurant_users
             WHERE user_id = $1 AND branch_id = $2
         `
-        const values = [user_id, restaurant_id]
+        const values = [userId, restaurantId]
 
         await db.query(query, values)
-    },
+    }
 
-    updateUserInRestaurant: async (user_id: string, restaurant_id: string, role_id: string, pin: string | null): Promise<void> => {
+    static async updateUserInRestaurant(userId: string, restaurantId: string, roleId: string, pin: string | null): Promise<void> {
         const query = `
             UPDATE restaurant_users
             SET role_id = $3, pin = $4
             WHERE user_id = $1 AND branch_id = $2
         `
-        const values = [user_id, restaurant_id, role_id, pin]
+        const values = [userId, restaurantId, roleId, pin]
 
         await db.query(query, values)
     }
