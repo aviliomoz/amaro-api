@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import { sendApiResponse } from "../classes/response.class";
+import { ApiResponse } from "../classes/response.class";
 
 export const validateToken = (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -20,6 +20,6 @@ export const validateToken = (req: Request, res: Response, next: NextFunction) =
 
     next();
   } catch (error) {
-    return sendApiResponse(res, 401, error, null, "Error al validar la sesión");
+    return ApiResponse.send(res, 401, error, null, "Error al validar la sesión");
   }
 };

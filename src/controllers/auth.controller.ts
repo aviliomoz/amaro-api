@@ -20,9 +20,9 @@ export class AuthController {
       const hashedPassword = await bcrypt.hash(password, salt);
 
       const user = await User.createUser({ name, lastname, email })
-      await Account.createAccount({ userId: user.id, password: hashedPassword })
+      await Account.createAccount({ user_id: user.id, password: hashedPassword })
 
-      const refreshToken = Token.generate({ userId: user.id }, 60 * 60 * 24 * 30);
+      const refreshToken = Token.generate({ user_id: user.id }, 60 * 60 * 24 * 30);
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -31,7 +31,7 @@ export class AuthController {
         expires: addMonth(new Date(), 1)
       })
 
-      const accessToken = Token.generate({ userId: user.id }, 60 * 10)
+      const accessToken = Token.generate({ user_id: user.id }, 60 * 10)
 
       ApiResponse.send(res, 201, null, { user, accessToken }, "Usuario registrado exitosamente");
     } catch (error) {
@@ -51,7 +51,7 @@ export class AuthController {
       const validatedPassword = await bcrypt.compare(password, account.password);
       if (!validatedPassword) throw new Error("Credenciales inválidas");
 
-      const refreshToken = Token.generate({ userId: user.id }, 60 * 60 * 24 * 30);
+      const refreshToken = Token.generate({ user_id: user.id }, 60 * 60 * 24 * 30);
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -60,7 +60,7 @@ export class AuthController {
         expires: addMonth(new Date(), 1)
       })
 
-      const accessToken = Token.generate({ userId: user.id }, 60 * 10)
+      const accessToken = Token.generate({ user_id: user.id }, 60 * 10)
 
       ApiResponse.send(res, 202, null, { user, accessToken }, "Inicio de sesión exitoso");
     } catch (error) {
@@ -76,11 +76,11 @@ export class AuthController {
       const validatedToken = Token.validate(refreshToken)
       if (!validatedToken) throw new Error("Token inválido")
 
-      const { userId } = validatedToken
+      const { user_id } = validatedToken
 
-      const user = await User.getUserById(userId)
+      const user = await User.getUserById(user_id)
 
-      const accessToken = Token.generate({ userId: user.id }, 60 * 10)
+      const accessToken = Token.generate({ user_id: user.id }, 60 * 10)
 
       ApiResponse.send(res, 202, null, { user, accessToken }, "Sesión activa");
 
