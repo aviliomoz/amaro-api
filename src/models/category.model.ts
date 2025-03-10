@@ -20,15 +20,13 @@ export class Category {
         return CategorySchema.omit({ id: true }).parse(data)
     }
 
-    static async getCategoriesByType(branch_id: string, type: ItemType): Promise<CategoryType[]> {
+    static async getCategoriesByType(brand_id: string, type: ItemType): Promise<CategoryType[]> {
         const query = `
-            SELECT c.* 
-            FROM categories AS c
-            INNER JOIN brands AS b ON b.id = c.brand_id
-            INNER JOIN branches AS br ON b.id = br.brand_id 
-            WHERE br.id = $1 AND c.type = $2
+            SELECT * 
+            FROM categories
+            WHERE brand_id = $1 AND type = $2
         `
-        const values = [branch_id, type]
+        const values = [brand_id, type]
 
         const result = await db.query(query, values)
         return result.rows as CategoryType[]

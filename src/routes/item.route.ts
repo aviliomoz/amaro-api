@@ -3,6 +3,9 @@ import { ItemController } from "../controllers/item.controller";
 
 const router = Router()
 
-router.get("/:branch_id", ItemController.getItemsByType)
+router.get("/:id", ItemController.getItemById)
+router.get("/branch/:branch_id", ItemController.getItemsByType)
+router.post("/branch/:branch_id", ItemController.createItem)
+router.put("/branch/:branch_id/:id", ItemController.updateItem)
 
 export const ItemRouter = router;
