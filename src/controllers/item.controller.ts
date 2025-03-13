@@ -28,12 +28,12 @@ export class ItemController {
     }
 
     static async createItem(req: Request, res: Response) {
-        const data = req.body as NewItemType
+        const data = req.body as FullItemType
         const branch_id = req.params.branch_id as string
 
         try {
             const item = await Item.createItem(data)
-            await Item.addItemToBranch(item.id, branch_id, item.price, item.cost)
+            await Item.addItemToBranch(branch_id, item.id, data.price, data.cost)
             ApiResponse.send(res, 201, null, item)
         } catch (error) {
             ApiResponse.send(res, 500, error, "Error al crear el ítem")

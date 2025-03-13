@@ -5,6 +5,7 @@ export const BrandSchema = z.object({
     id: z.string().uuid(),
     name: z.string().max(50),
     status: z.enum(["active", "inactive"]).default("active"),
+    slug: z.string().max(20)
 })
 
 export type BrandType = z.infer<typeof BrandSchema>
@@ -19,6 +20,14 @@ export class Brand {
     static async getBrandById(id: string): Promise<BrandType> {
         const query = `SELECT * FROM brands WHERE id = $1`
         const values = [id]
+
+        const result = await db.query(query, values)
+        return result.rows[0] as BrandType
+    }
+
+    static async getBrandBySlug(slug: string): Promise<BrandType> {
+        const query = `SELECT * FROM brands WHERE slug = $1`
+        const values = [slug]
 
         const result = await db.query(query, values)
         return result.rows[0] as BrandType

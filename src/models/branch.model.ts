@@ -6,7 +6,7 @@ export const BranchSchema = z.object({
     name: z.string().max(50),
     status: z.enum(["active", "inactive"]).default("active"),
     brand_id: z.string().uuid(),
-    type: z.enum(["sales", "production"]).default("sales")
+    slug: z.string().max(20)
 })
 
 export type BranchType = z.infer<typeof BranchSchema>
@@ -20,6 +20,19 @@ export class Branch {
     static async getBranchById(id: string): Promise<BranchType> {
         const query = `SELECT * FROM branches WHERE id = $1`
         const values = [id]
+
+        const result = await db.query(query, values)
+        return result.rows[0] as BranchType
+    }
+
+    static async getBranchBySlug(brand_id: string, slug: string): Promise<BranchType> {
+        const query = `
+            SELECT branches.* 
+            FROM branches 
+            INNER JOIN brands ON brands.id = branches.brand_id
+            WHERE brands.id = $1 AND branches.slug = $2
+        `
+        const values = [brand_id, slug]
 
         const result = await db.query(query, values)
         return result.rows[0] as BranchType

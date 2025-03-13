@@ -16,7 +16,6 @@ export const ItemSchema = z.object({
     waste: z.number().min(0).max(100),
     brand_id: z.string().uuid(),
     discharge_type: z.enum(["recipe", "unit"]),
-    stock_control: z.boolean()
 })
 
 export type ItemType = z.infer<typeof ItemSchema>
@@ -64,12 +63,12 @@ export class Item {
         return result.rows[0] as FullItemType
     }
 
-    static async createItem(data: NewItemType): Promise<FullItemType> {
+    static async createItem(data: FullItemType): Promise<FullItemType> {
         const item = Item.validate(data)
 
         const query = `
-            INSERT INTO items (code, name, category_id, type, subtype, status, um, taxable, yield, waste, brand_id, discharge_type, stock_control)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            INSERT INTO items (code, name, category_id, type, subtype, status, um, taxable, yield, waste, brand_id, discharge_type)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *
         `
 
@@ -86,7 +85,6 @@ export class Item {
             item.waste,
             item.brand_id,
             item.discharge_type,
-            item.stock_control
         ]
 
         const result = await db.query(query, params)
@@ -109,8 +107,8 @@ export class Item {
 
         const query = `
             UPDATE items
-            SET code = $1, name = $2, category_id = $3, type = $4, subtype = $5, status = $6, um = $7, taxable = $8, yield = $9, waste = $10, brand_id = $11, discharge_type = $12, stock_control = $13
-            WHERE id = $14
+            SET code = $1, name = $2, category_id = $3, type = $4, subtype = $5, status = $6, um = $7, taxable = $8, yield = $9, waste = $10, brand_id = $11, discharge_type = $12
+            WHERE id = $13
             RETURNING *
         `
 
@@ -127,7 +125,6 @@ export class Item {
             item.waste,
             item.brand_id,
             item.discharge_type,
-            item.stock_control,
             id
         ]
 

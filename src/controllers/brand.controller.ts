@@ -14,6 +14,17 @@ export class BrandController {
         }
     }
 
+    static async getBrandBySlug(req: Request, res: Response) {
+        const slug = req.params.slug as string
+
+        try {
+            const brand = await Brand.getBrandBySlug(slug)
+            ApiResponse.send(res, 200, null, brand)
+        } catch (error) {
+            ApiResponse.send(res, 500, error, null, "Error al obtener la marca")
+        }
+    }
+
     static async getBrandsByUser(req: Request, res: Response) {
         const user_id = req.params.user_id as string
 

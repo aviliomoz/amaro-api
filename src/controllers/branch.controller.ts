@@ -14,6 +14,18 @@ export class BranchController {
         }
     }
 
+    static async getBranchBySlug(req: Request, res: Response) {
+        const brand_id = req.params.brand_id as string
+        const slug = req.params.slug as string
+
+        try {
+            const branch = await Branch.getBranchBySlug(brand_id, slug)
+            ApiResponse.send(res, 200, null, branch)
+        } catch (error) {
+            ApiResponse.send(res, 500, error, null, "Error al obtener el local")
+        }
+    }
+
     static async getBranchesByBrand(req: Request, res: Response) {
         const brand_id = req.params.brand_id as string
 
