@@ -92,7 +92,6 @@ export class AuthController {
   static async logout(req: Request, res: Response) {
     try {
       res.clearCookie("refreshToken")
-      res.clearCookie("currentRestaurantId")
       ApiResponse.send(res, 200, null, null, "Sesión cerrada");
     } catch (error) {
       ApiResponse.send(res, 500, error, null, "Error al cerrar la sesión")
