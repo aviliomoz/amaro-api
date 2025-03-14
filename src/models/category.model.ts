@@ -25,6 +25,7 @@ export class Category {
             SELECT * 
             FROM categories
             WHERE brand_id = $1 AND type = $2
+            ORDER BY name
         `
         const values = [brand_id, type]
 

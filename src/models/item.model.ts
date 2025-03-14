@@ -10,7 +10,7 @@ export const ItemSchema = z.object({
     type: z.enum(ITEM_TYPES),
     subtype: z.enum([...PRODUCT_SUBTYPES, ...COMBO_SUBTYPES, ...SUPPLY_SUBTYPES, ...BASE_RECIPE_SUBTYPES]),
     status: z.string(),
-    um: z.enum(["kilogram", "liter", "unit", "ounze"]),
+    um: z.enum(["kilogram", "liter", "unit", "ounce"]),
     taxable: z.boolean(),
     yield: z.number().min(0),
     waste: z.number().min(0).max(100),
