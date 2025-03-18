@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { ItemType } from "../utils/types";
+import { ItemTypeEnum } from "../utils/types";
 import { db } from "../lib/database";
 import { ITEM_TYPES } from "../utils/constants";
 
 export const CategorySchema = z.object({
-    id: z.string().uuid(),
+    id: z.string().uuid().optional(),
     name: z.string().max(100),
     type: z.enum(ITEM_TYPES),
     status: z.enum(["active", "inactive"]).default("active"),
@@ -12,15 +12,14 @@ export const CategorySchema = z.object({
 });
 
 export type CategoryType = z.infer<typeof CategorySchema>
-export type NewCategoryType = Omit<CategoryType, "id">
 
 export class Category {
 
-    static validate(data: NewCategoryType) {
-        return CategorySchema.omit({ id: true }).parse(data)
+    static validate(data: CategoryType) {
+        return CategorySchema.parse(data)
     }
 
-    static async getCategoriesByType(brand_id: string, type: ItemType): Promise<CategoryType[]> {
+    static async getCategoriesByType(brand_id: string, type: ItemTypeEnum): Promise<CategoryType[]> {
         const query = `
             SELECT * 
             FROM categories

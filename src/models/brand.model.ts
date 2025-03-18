@@ -2,19 +2,18 @@ import { z } from "zod";
 import { db } from "../lib/database";
 
 export const BrandSchema = z.object({
-    id: z.string().uuid(),
+    id: z.string().uuid().optional(),
     name: z.string().max(50),
     status: z.enum(["active", "inactive"]).default("active"),
     slug: z.string().max(20)
 })
 
 export type BrandType = z.infer<typeof BrandSchema>
-export type NewBrandType = Omit<BrandType, "id">
 
 export class Brand {
 
-    static validate(data: NewBrandType) {
-        return BrandSchema.omit({ id: true }).parse(data)
+    static validate(data: BrandType) {
+        return BrandSchema.parse(data)
     }
 
     static async getBrandById(id: string): Promise<BrandType> {

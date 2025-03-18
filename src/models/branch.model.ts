@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "../lib/database";
 
 export const BranchSchema = z.object({
-    id: z.string().uuid(),
+    id: z.string().uuid().optional(),
     name: z.string().max(50),
     status: z.enum(["active", "inactive"]).default("active"),
     brand_id: z.string().uuid(),
@@ -10,11 +10,10 @@ export const BranchSchema = z.object({
 })
 
 export type BranchType = z.infer<typeof BranchSchema>
-export type NewBranchType = Omit<BranchType, "id">
 
 export class Branch {
-    static validate(data: NewBranchType) {
-        return BranchSchema.omit({ id: true }).parse(data)
+    static validate(data: BranchType) {
+        return BranchSchema.parse(data)
     }
 
     static async getBranchById(id: string): Promise<BranchType> {

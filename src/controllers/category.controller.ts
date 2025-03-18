@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { ApiResponse } from "../classes/response.class";
 import { Category } from "../models/category.model";
-import { ItemType } from "../utils/types";
+import { ItemTypeEnum } from "../utils/types";
 
 export class CategoryController {
     static async getCategoriesByType(req: Request, res: Response) {
         const brand_id = req.params.brand_id as string
-        const type = req.params.type as ItemType
+        const type = req.params.type as ItemTypeEnum
 
         try {
             const categories = await Category.getCategoriesByType(brand_id, type)

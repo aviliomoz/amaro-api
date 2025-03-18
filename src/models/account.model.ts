@@ -2,17 +2,16 @@ import { z } from "zod";
 import { db } from "../lib/database";
 
 export const AccountSchema = z.object({
-    id: z.string().uuid(),
+    id: z.string().uuid().optional(),
     user_id: z.string().uuid(),
     password: z.string().max(255),
 })
 
 export type AccountType = z.infer<typeof AccountSchema>
-export type NewAccountType = Omit<AccountType, "id">
 
 export class Account {
 
-    static async createAccount(account: NewAccountType): Promise<AccountType> {
+    static async createAccount(account: AccountType): Promise<AccountType> {
         const query = "INSERT INTO accounts (user_id, password) VALUES ($1, $2) RETURNING *"
         const values = [account.user_id, account.password]
 
