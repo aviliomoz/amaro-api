@@ -6,3 +6,4 @@ export const SUPPLY_SUBTYPES = ["ingredients", "consumables"] as const
 export const BASE_RECIPE_SUBTYPES = ["preparations", "derivatives", "portions"] as const
 
 export const UMS = ["kilogram", "liter", "unit", "ounce"] as const
+export const ITEM_DISCHARGE_TYPE = ["recipe", "unit"] as const

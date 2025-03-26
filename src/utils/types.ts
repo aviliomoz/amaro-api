@@ -1,6 +1,7 @@
-import { BASE_RECIPE_SUBTYPES, COMBO_SUBTYPES, ITEM_TYPES, PRODUCT_SUBTYPES, SUPPLY_SUBTYPES, UMS } from "./constants"
+import { BASE_RECIPE_SUBTYPES, COMBO_SUBTYPES, ITEM_DISCHARGE_TYPE, ITEM_TYPES, PRODUCT_SUBTYPES, SUPPLY_SUBTYPES, UMS } from "./constants"
 
 export type ItemTypeEnum = typeof ITEM_TYPES[number]
+export type ItemDischargeEnum = typeof ITEM_DISCHARGE_TYPE[number]
 
 export type ProductSubtypeEnum = typeof PRODUCT_SUBTYPES[number]
 export type ComboSubtypeEnum = typeof COMBO_SUBTYPES[number]
