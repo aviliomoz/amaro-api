@@ -5,11 +5,11 @@ import { ItemTypeEnum } from "../utils/types";
 
 export class CategoryController {
     static async getCategoriesByType(req: Request, res: Response) {
-        const brand_id = req.params.brand_id as string
+        const restaurant_id = req.params.restaurant_id as string
         const type = req.params.type as ItemTypeEnum
 
         try {
-            const categories = await Category.getCategoriesByType(brand_id, type)
+            const categories = await Category.getCategoriesByType(restaurant_id, type)
             ApiResponse.send(res, 200, null, categories)
         } catch (error) {
             ApiResponse.send(res, 500, error, null, "Error al cargar las categorías")

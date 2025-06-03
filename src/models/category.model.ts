@@ -8,7 +8,7 @@ export const CategorySchema = z.object({
     name: z.string().max(100),
     type: z.enum(ITEM_TYPES),
     status: z.enum(["active", "inactive"]).default("active"),
-    brand_id: z.string().uuid(),
+    restaurant_id: z.string().uuid(),
 });
 
 export type CategoryType = z.infer<typeof CategorySchema>
@@ -19,14 +19,14 @@ export class Category {
         return CategorySchema.parse(data)
     }
 
-    static async getCategoriesByType(brand_id: string, type: ItemTypeEnum): Promise<CategoryType[]> {
+    static async getCategoriesByType(restaurant_id: string, type: ItemTypeEnum): Promise<CategoryType[]> {
         const query = `
             SELECT * 
             FROM categories
-            WHERE brand_id = $1 AND type = $2
+            WHERE restaurant_id = $1 AND type = $2
             ORDER BY name
         `
-        const values = [brand_id, type]
+        const values = [restaurant_id, type]
 
         const result = await db.query(query, values)
         return result.rows as CategoryType[]

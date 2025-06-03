@@ -1,19 +1,22 @@
 import { Router } from "express";
+import { validateToken } from "../middlewares/auth.middleware";
+
 import { AuthRouter } from "./auth.route";
 import { UserRouter } from "./user.route";
-import { validateToken } from "../middlewares/auth.middleware";
-import { BrandRouter } from "./brand.route";
-import { BranchRouter } from "./branch.route";
+import { RestaurantRouter } from "./restaurant.route";
 import { CategoryRouter } from "./category.route";
 import { ItemRouter } from "./item.route";
+import { IngredientRouter } from "./ingredient.route";
+import { DerivativeRouter } from "./derivative.route";
 
 const router = Router();
 
 router.use("/auth", AuthRouter);
 router.use("/users", validateToken, UserRouter);
-router.use("/brands", BrandRouter);
-router.use("/branches", BranchRouter);
+router.use("/restaurants", RestaurantRouter);
 router.use("/categories", CategoryRouter);
 router.use("/items", ItemRouter);
+router.use("/ingredients", IngredientRouter);
+router.use("/derivatives", DerivativeRouter);
 
 export const ApiRouter = router;
