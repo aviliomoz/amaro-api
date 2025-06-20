@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ItemTypeEnum } from "../utils/types";
+import { ItemSubtypeEnum, ItemTypeEnum } from "../utils/types";
 import { ApiResponse } from "../classes/response.class";
 import { Item, ItemType } from "../models/item.model";
 
@@ -7,10 +7,14 @@ export class ItemController {
     static async getItems(req: Request, res: Response) {
         const restaurant_id = req.query.restaurant_id as string
         const type = req.query.type as ItemTypeEnum
-        const search = req.query.search as string
+
+        const subtype = req.query.subtype as ItemSubtypeEnum;
+        const search = req.query.search as string;
+        const category_id = req.query.category_id as string;
+        const page = req.query.page ? parseInt(req.query.page as string) : undefined;
 
         try {
-            const items = await Item.getItems(restaurant_id, type)
+            const items = await Item.getItems(restaurant_id, type, subtype, search, category_id, page)
             ApiResponse.send(res, 200, null, items)
         } catch (error) {
             ApiResponse.send(res, 500, error, null, "Error al obtener los ítems")

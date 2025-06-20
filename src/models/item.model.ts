@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { BASE_RECIPE_SUBTYPES, COMBO_SUBTYPES, ITEM_DISCHARGE_TYPE, ITEM_STATUSES, ITEM_TYPES, PRODUCT_SUBTYPES, SUPPLY_SUBTYPES, UMS } from "../utils/constants";
 import { db } from "../lib/database";
-import { ItemTypeEnum } from "../utils/types";
+import { ItemSubtypeEnum, ItemTypeEnum } from "../utils/types";
 
 export const ItemSchema = z.object({
     id: z.string().uuid().optional(),
@@ -33,14 +33,39 @@ export type ItemType = z.infer<typeof ItemSchema>
 
 export class Item {
 
-    static async getItems(restaurant_id: string, type: ItemTypeEnum): Promise<ItemType[]> {
-        const query = `
+    static async getItems(restaurant_id: string, type: ItemTypeEnum, subtype?: ItemSubtypeEnum, search?: string, category_id?: string, page?: number): Promise<ItemType[]> {
+        let query = `
             SELECT *
             FROM items
             WHERE restaurant_id = $1 AND type = $2 AND subtype != 'derivatives'
-            ORDER BY name
         `
-        const params = [restaurant_id, type]
+        const params: (string | number)[] = [restaurant_id, type]
+
+        if (subtype) {
+            const index = params.length + 1
+            query += ` AND subtype = $${index}`
+            params.push(subtype)
+        }
+
+        if (search) {
+            const index = params.length + 1
+            query += ` AND name ILIKE '%' || $${index} || '%'`
+            params.push(search)
+        }
+
+        if (category_id) {
+            const index = params.length + 1
+            query += ` AND category_id = $${index}`
+            params.push(category_id)
+        }
+
+        query += " ORDER BY name ASC"
+        
+        if (page) {
+            const limit = 20
+            const offset = (page - 1) * limit
+            query += ` LIMIT ${limit} OFFSET ${offset}`
+        }
 
         const result = await db.query(query, params)
         return result.rows as ItemType[]
