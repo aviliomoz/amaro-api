@@ -19,17 +19,61 @@ export class Category {
         return CategorySchema.parse(data)
     }
 
-    static async getCategoriesByType(restaurant_id: string, type: ItemTypeEnum): Promise<CategoryType[]> {
-        const query = `
+    static async getCategories(restaurant_id: string, type?: ItemTypeEnum, status?: "active" | "inactive", search?: string): Promise<CategoryType[]> {
+        let query = `
             SELECT * 
             FROM categories
-            WHERE restaurant_id = $1 AND type = $2
-            ORDER BY name
+            WHERE restaurant_id = $1
         `
-        const values = [restaurant_id, type]
+        let values = [restaurant_id]
+
+        if (type) {
+            const index = values.length + 1
+            query += ` AND type = $${index}`
+            values.push(type)
+        }
+
+        if (status) {
+            const index = values.length + 1
+            query += ` AND status = $${index}`
+            values.push(status)
+        }
+
+        if (search) {
+            const index = values.length + 1
+            query += ` AND name ILIKE '%' || $${index} || '%'`
+            values.push(search)
+        }
+
+        query += ` ORDER BY name`
 
         const result = await db.query(query, values)
         return result.rows as CategoryType[]
+    }
+
+    static async createCategory(data: CategoryType): Promise<CategoryType> {
+        const validatedData = this.validate(data);
+        const query = `
+            INSERT INTO categories (name, type, status, restaurant_id)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const values = [validatedData.name, validatedData.type, validatedData.status, validatedData.restaurant_id];
+        const result = await db.query(query, values);
+        return result.rows[0] as CategoryType;
+    }
+
+    static async updateCategory(id: string, data: CategoryType): Promise<CategoryType> {
+        const validatedData = this.validate(data);
+        const query = `
+            UPDATE categories
+            SET name = $1, type = $2, status = $3
+            WHERE id = $4
+            RETURNING *
+        `;
+        const values = [validatedData.name, validatedData.type, validatedData.status, id];
+        const result = await db.query(query, values);
+        return result.rows[0] as CategoryType;
     }
 
 }

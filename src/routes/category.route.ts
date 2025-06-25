@@ -3,6 +3,8 @@ import { CategoryController } from "../controllers/category.controller";
 
 const router = Router()
 
-router.get("/:restaurant_id/:type", CategoryController.getCategoriesByType)
+router.get("/", CategoryController.getCategories)
+router.post("/", CategoryController.createCategory)
+router.put("/:id", CategoryController.updateCategory)
 
 export const CategoryRouter = router;

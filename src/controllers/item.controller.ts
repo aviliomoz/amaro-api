@@ -12,9 +12,10 @@ export class ItemController {
         const search = req.query.search as string;
         const category_id = req.query.category_id as string;
         const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+        const status = req.query.status as "active" | "inactive" | undefined;
 
         try {
-            const items = await Item.getItems(restaurant_id, type, subtype, search, category_id, page)
+            const items = await Item.getItems(restaurant_id, type, subtype, search, category_id, page, status)
             ApiResponse.send(res, 200, null, items)
         } catch (error) {
             ApiResponse.send(res, 500, error, null, "Error al obtener los ítems")

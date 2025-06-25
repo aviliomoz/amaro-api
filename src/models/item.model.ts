@@ -33,7 +33,7 @@ export type ItemType = z.infer<typeof ItemSchema>
 
 export class Item {
 
-    static async getItems(restaurant_id: string, type: ItemTypeEnum, subtype?: ItemSubtypeEnum, search?: string, category_id?: string, page?: number): Promise<ItemType[]> {
+    static async getItems(restaurant_id: string, type: ItemTypeEnum, subtype?: ItemSubtypeEnum, search?: string, category_id?: string, page?: number, status?: "active" | "inactive"): Promise<ItemType[]> {
         let query = `
             SELECT *
             FROM items
@@ -59,8 +59,14 @@ export class Item {
             params.push(category_id)
         }
 
+        if (status === "active") {
+            query += " AND status = 'active'"
+        } else if (status === "inactive") {
+            query += " AND status = 'inactive'"
+        }
+
         query += " ORDER BY name ASC"
-        
+
         if (page) {
             const limit = 20
             const offset = (page - 1) * limit
@@ -159,7 +165,7 @@ export class Item {
             SELECT *
             FROM items
             WHERE name ILIKE '%' || $1 || '%' AND restaurant_id = $2 AND type = $3
-            LIMIT 7
+            LIMIT 10
         `
         const params = [`%${search}%`, restaurant_id, type]
 
