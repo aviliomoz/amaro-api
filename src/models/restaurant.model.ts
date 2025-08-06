@@ -8,7 +8,15 @@ export const RestaurantSchema = z.object({
     currency_code: z.string().max(3).default("PEN"),
     purchase_tax: z.number().min(0).max(100).default(0),
     sales_tax: z.number().min(0).max(100).default(0),
-    slug: z.string().max(20)
+    slug: z.string().max(20),
+    commissions: z.number().min(0).max(100).default(3),
+
+    base_cost: z.number().min(0).default(32),
+    rental_cost: z.number().min(0).default(10),
+    labor_cost: z.number().min(0).default(20),
+    service_cost: z.number().min(0).default(5), 
+    marketing_cost: z.number().min(0).default(5),
+    other_cost: z.number().min(0).default(5),
 })
 
 export type RestaurantType = z.infer<typeof RestaurantSchema>

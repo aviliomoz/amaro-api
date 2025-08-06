@@ -21,7 +21,8 @@ export const ItemSchema = z.object({
     purchase_price: z.number(),
     cost_price: z.number(),
     clean_price: z.number(),
-    profitability: z.number().min(0).max(100),
+    profit_percentage: z.number().min(0).max(100),
+    cost_percentage: z.number().min(0).max(100),
 
     has_equivalence: z.boolean().optional().default(false),
     equivalence_um: z.enum(UMS).optional(),
@@ -94,8 +95,8 @@ export class Item {
     static async createItem(data: ItemType): Promise<ItemType> {
 
         const query = `
-            INSERT INTO items (internal_code, external_code, name, category_id, type, subtype, um, taxable, yield, waste, restaurant_id, discharge_type, sale_price, purchase_price, cost_price, clean_price, profitability, has_equivalence, equivalence_um, equivalence_amount, status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+            INSERT INTO items (internal_code, external_code, name, category_id, type, subtype, um, taxable, yield, waste, restaurant_id, discharge_type, sale_price, purchase_price, cost_price, clean_price, profit_percentage, cost_percentage, has_equivalence, equivalence_um, equivalence_amount, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
             RETURNING *
         `
 
@@ -116,7 +117,8 @@ export class Item {
             data.purchase_price,
             data.cost_price,
             data.clean_price,
-            data.profitability,
+            data.profit_percentage,
+            data.cost_percentage,
             data.has_equivalence,
             data.equivalence_um,
             data.equivalence_amount,
@@ -131,8 +133,8 @@ export class Item {
 
         const query = `
             UPDATE items
-            SET internal_code = $1, external_code = $2, name = $3, category_id = $4, type = $5, subtype = $6, um = $7, taxable = $8, yield = $9, waste = $10, restaurant_id = $11, discharge_type = $12, sale_price = $13, purchase_price = $14, cost_price = $15, clean_price = $16, profitability = $17, has_equivalence = $18, equivalence_um = $19, equivalence_amount = $20, status = $21
-            WHERE id = $22
+            SET internal_code = $1, external_code = $2, name = $3, category_id = $4, type = $5, subtype = $6, um = $7, taxable = $8, yield = $9, waste = $10, restaurant_id = $11, discharge_type = $12, sale_price = $13, purchase_price = $14, cost_price = $15, clean_price = $16, profit_percentage = $17, cost_percentage = $18, has_equivalence = $19, equivalence_um = $20, equivalence_amount = $21, status = $22
+            WHERE id = $23
         `
 
         const params = [
@@ -152,7 +154,8 @@ export class Item {
             data.purchase_price,
             data.cost_price,
             data.clean_price,
-            data.profitability,
+            data.profit_percentage,
+            data.cost_percentage,
             data.has_equivalence,
             data.equivalence_um,
             data.equivalence_amount,
@@ -167,7 +170,7 @@ export class Item {
         const query = `
             SELECT *
             FROM items
-            WHERE name ILIKE '%' || $1 || '%' AND restaurant_id = $2 AND type = $3
+            WHERE name ILIKE $1 AND restaurant_id = $2 AND type = $3
             LIMIT 10
         `
         const params = [`%${search}%`, restaurant_id, type]
