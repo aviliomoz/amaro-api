@@ -33,4 +33,17 @@ export class Derivative {
 
         await db.query(query, params)
     }
+
+    static async getDerivativeParentItem(derivative_id: string): Promise<ItemType> {
+        const query = `
+            SELECT i.*
+            FROM items AS i
+            INNER JOIN derivatives AS d ON i.id = d.item_id 
+            WHERE d.derivative_id = $1
+        `
+        const params = [derivative_id]
+
+        const result = await db.query(query, params)
+        return result.rows[0] as ItemType
+    }
 }

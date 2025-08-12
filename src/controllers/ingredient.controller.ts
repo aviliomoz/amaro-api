@@ -1,9 +1,13 @@
 import e, { Request, Response } from "express"
 import { Ingredient, IngredientType } from "../models/ingredient.model"
 import { ApiResponse } from "../classes/response.class"
-import { get } from "http"
-import { ItemType } from "../models/item.model"
+import { Item, ItemType } from "../models/item.model"
 import { UMEnum } from "../utils/types"
+import { umConversion } from "../utils/conversions"
+import { Derivative } from "../models/derivative.model"
+import { getDeepIngredients } from "../utils/recipes"
+
+export type ConversionIngredientType = { id: string, name: string, um: UMEnum, amount: number, products: { name: string, amount: number }[] }
 
 export class IngredientController {
     static async getItemRecipe(req: Request, res: Response) {
@@ -74,16 +78,26 @@ export class IngredientController {
 
     static async getConsumedIngredients(req: Request, res: Response) {
         const products = req.body as { item: ItemType, amount: number }[]
+        const level = req.query.level as "superficial" | "deep"
 
-        let consumedIngredients: { name: string, um: UMEnum, amount: number, products: { name: string, amount: number }[] }[] = []
+        let consumedIngredients: ConversionIngredientType[] = []
 
         try {
             for await (const product of products) {
-                const ingredients = await Ingredient.getItemRecipe(product.item.id!)
+                if (product.item.subtype === "unprocessed") {
+                    consumedIngredients.push({
+                        id: product.item.id!,
+                        name: product.item.name,
+                        um: product.item.um,
+                        amount: product.amount,
+                        products: [{ name: product.item.name, amount: product.amount }]
+                    })
+                } else {
+                    const ingredients = await Ingredient.getItemRecipe(product.item.id!)
 
-                if (ingredients.length > 0) {
                     for (const ingredient of ingredients) {
                         consumedIngredients.push({
+                            id: ingredient.id!,
                             name: ingredient.name,
                             um: ingredient.um,
                             amount: ingredient.amount * product.amount,
@@ -91,6 +105,10 @@ export class IngredientController {
                         })
                     }
                 }
+            }
+
+            if (level === "deep") {
+                consumedIngredients = await getDeepIngredients(consumedIngredients);
             }
 
             ApiResponse.send(res, 200, null, consumedIngredients)
