@@ -1,10 +1,8 @@
-import e, { Request, Response } from "express"
+import { Request, Response } from "express"
 import { Ingredient, IngredientType } from "../models/ingredient.model"
 import { ApiResponse } from "../classes/response.class"
-import { Item, ItemType } from "../models/item.model"
+import { ItemType } from "../models/item.model"
 import { UMEnum } from "../utils/types"
-import { umConversion } from "../utils/conversions"
-import { Derivative } from "../models/derivative.model"
 import { getDeepIngredients } from "../utils/recipes"
 
 export type ConversionIngredientType = { id: string, name: string, um: UMEnum, amount: number, products: { name: string, amount: number }[] }

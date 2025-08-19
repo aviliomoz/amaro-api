@@ -8,6 +8,7 @@ export const getDeepIngredients = async (ingredients: ConversionIngredientType[]
     let supplies: ConversionIngredientType[] = []
 
     for await (const ingredient of ingredients) {
+
         const parentItem = await Item.getItemById(ingredient.id)
 
         if (parentItem.type === "products" || parentItem.type === "supplies") {
@@ -36,13 +37,17 @@ export const getDeepIngredients = async (ingredients: ConversionIngredientType[]
             let recipeIngredients: ConversionIngredientType[] = [];
 
             for await (const recipeIngredient of recipe) {
+
+                const yieldCalc = umConversion(parentItem.yield, parentItem.um, ingredient.um);
+
                 recipeIngredients.push({
                     id: recipeIngredient.id,
                     name: recipeIngredient.name,
                     um: recipeIngredient.um,
-                    amount: recipeIngredient.amount * ingredient.amount,
+                    amount: ingredient.amount * recipeIngredient.amount / yieldCalc,
                     products: ingredient.products
                 });
+
             }
             // Recursively get deep ingredients for the recipe
             // This will flatten the recipe ingredients into a single array of supplies
