@@ -3,6 +3,7 @@ import { DeviceController } from "../controllers/device.controller";
 
 const router = Router();
 
+router.get("/:deviceCode", DeviceController.getDeviceByCode);
 router.get("/check-device/:device_code", DeviceController.getVinculatedRestaurants);
 
 export const DeviceRouter = router;
